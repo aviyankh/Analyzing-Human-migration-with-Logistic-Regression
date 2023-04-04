@@ -1,0 +1,53 @@
+---
+title: "GLMProject"
+author: "Aviyan Khadka"
+date: '2022-11-29'
+output: pdf_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+```{r}
+
+
+pdata <-  read.csv("population.csv")
+sub_data <- subset(pdata, select = -c(country))
+
+#full model 
+fit1 <- glm(cbind(sub_data$immigrated_pop,sub_data$remaining_pop)~
+              gdp_growth_rate+inflation+Stability*unemployment+Stability*crime_rate+
+              Stability*Poverty + Stability*Terrorism, data = sub_data, family = binomial())
+summary(fit1)
+res1 <- resid(fit1, type="deviance")
+
+qqnorm(res1)
+qqline(res1)
+
+plot(res1,  main = "Deviance Residuals", xlab = "Index", ylab="Residuals")
+
+#quasi full model 
+fit2 <- glm(cbind(sub_data$immigrated_pop,sub_data$remaining_pop)~
+              gdp_growth_rate+inflation+Stability*unemployment+Stability*crime_rate+
+              Stability*Poverty + Stability*Terrorism, data = sub_data,family=quasibinomial())
+
+rsd <- resid(fit2, "deviance")
+
+summary(fit2)
+
+#quasi reduced model 
+fit5 <- glm(cbind(sub_data$immigrated_pop,sub_data$remaining_pop)~
+              Stability*crime_rate+Terrorism, data = sub_data,family=quasibinomial())
+summary(fit5)$coeff
+
+
+anova(fit5, fit2, test = "F")
+
+res5 = resid(fit5, type="deviance")
+
+qqnorm(res5)
+qqline(res5)
+
+plot(res5,  main = "Deviance Residuals", xlab = "Index", ylab="Residuals")
+```
